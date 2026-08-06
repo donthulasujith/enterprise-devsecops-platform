@@ -20,7 +20,7 @@
           {
             "position": {
               "x": 27.5,
-              "y": 150
+              "y": 150.00000000000009
             },
             "size": {
               "width": 112.5,
@@ -38,6 +38,7 @@
             },
             "visible": true,
             "shape": "actor",
+            "zIndex": 1,
             "ports": {
               "groups": {
                 "top": {
@@ -121,7 +122,6 @@
               ]
             },
             "id": "33e15878-6c7b-46da-93d5-082e23a9ef0d",
-            "zIndex": 1,
             "data": {
               "type": "tm.Actor",
               "name": "Developer",
@@ -132,6 +132,13 @@
               "hasOpenThreats": false,
               "providesAuthentication": false,
               "threats": []
+            },
+            "tools": {
+              "items": [
+                "boundary",
+                "button-remove"
+              ],
+              "name": null
             }
           },
           {
@@ -155,6 +162,7 @@
             },
             "visible": true,
             "shape": "actor",
+            "zIndex": 2,
             "ports": {
               "groups": {
                 "top": {
@@ -238,7 +246,6 @@
               ]
             },
             "id": "851af842-2b9e-4fbf-8fa0-203c15f2f2b5",
-            "zIndex": 2,
             "data": {
               "type": "tm.Actor",
               "name": "End User",
@@ -273,6 +280,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 3,
             "ports": {
               "groups": {
                 "top": {
@@ -356,7 +364,6 @@
               ]
             },
             "id": "bbded701-d193-44dc-a586-0ea3334e6a3e",
-            "zIndex": 3,
             "data": {
               "type": "tm.Process",
               "name": "GitHub Repository",
@@ -377,8 +384,8 @@
           },
           {
             "position": {
-              "x": 440,
-              "y": 200
+              "x": 385,
+              "y": 190
             },
             "size": {
               "width": 60,
@@ -396,6 +403,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 4,
             "ports": {
               "groups": {
                 "top": {
@@ -479,7 +487,6 @@
               ]
             },
             "id": "df6d3ebd-9983-41af-aa01-c8365f41d709",
-            "zIndex": 4,
             "data": {
               "type": "tm.Process",
               "name": "GitHub Actions",
@@ -516,6 +523,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 6,
             "ports": {
               "groups": {
                 "top": {
@@ -599,7 +607,6 @@
               ]
             },
             "id": "364db29c-7e7f-4e78-9d08-35475336d057",
-            "zIndex": 6,
             "data": {
               "type": "tm.Process",
               "name": "Juice Shop Application",
@@ -639,6 +646,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 7,
             "ports": {
               "groups": {
                 "top": {
@@ -722,7 +730,6 @@
               ]
             },
             "id": "e621452f-ed89-4bad-89ab-e4b74c081dd1",
-            "zIndex": 7,
             "data": {
               "type": "tm.Process",
               "name": "Kubernetes Cluster",
@@ -759,6 +766,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 8,
             "ports": {
               "groups": {
                 "top": {
@@ -842,7 +850,6 @@
               ]
             },
             "id": "9c50621a-8847-4a18-9687-22f678499fb9",
-            "zIndex": 8,
             "data": {
               "type": "tm.Process",
               "name": "Monitoring",
@@ -879,6 +886,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 9,
             "ports": {
               "groups": {
                 "top": {
@@ -962,7 +970,6 @@
               ]
             },
             "id": "cc692809-0bd5-4a8b-b1d4-6aa0afead294",
-            "zIndex": 9,
             "data": {
               "type": "tm.Process",
               "name": "Runtime Security",
@@ -1569,6 +1576,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 11,
             "ports": {
               "groups": {
                 "top": {
@@ -1652,7 +1660,6 @@
               ]
             },
             "id": "8b6e56e1-31a2-474f-916e-0cf681d6c9ee",
-            "zIndex": 11,
             "data": {
               "type": "tm.Process",
               "name": "Container Registry",
@@ -1673,6 +1680,6 @@
     ],
     "diagramTop": 1,
     "reviewer": "",
-    "threatTop": 0
+    "threatTop": 1
   }
 }
