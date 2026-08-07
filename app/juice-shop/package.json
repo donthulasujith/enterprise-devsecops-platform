@@ -212,13 +212,20 @@
     "typescript-eslint": "^8.57.1"
   },
   "engines": {
-    "node": "22"
+    "node": "22 - 26"
   },
   "os": [
-    "darwin"
+    "win32",
+    "linux",
+    "darwin",
+    "freebsd",
+    "openbsd"
   ],
   "cpu": [
-    "x64"
+    "x64",
+    "x32",
+    "arm64",
+    "arm"
   ],
   "heroku-run-build-script": true
 }
