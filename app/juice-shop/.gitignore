@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+npm-debug.log
+
+
+# Environment Variables
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+
+# Build Output
+dist/
+build/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+
+# Temporary Files
+*.tmp
+*.temp
