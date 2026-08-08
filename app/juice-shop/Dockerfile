@@ -10,7 +10,8 @@ COPY . .
 # Install dependencies
 RUN npm install
 
-
+#Adding non-root user
+USER node
 
 
 # Expose the application port
