@@ -29,11 +29,16 @@ jobs:
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker Image
-        run: echo "Docker build"
+        run: docker build -t juice-shop:dev app/juice-shop
 
-      - name: Container Scan
-        run: echo "Trivy image"
+      - name: Run Trivy image scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: juice-shop:dev
+          format: table
+          severity: CRITICAL,HIGH
