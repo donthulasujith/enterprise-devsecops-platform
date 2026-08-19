@@ -19,8 +19,13 @@ jobs:
           python -m pip install semgrep
           semgrep scan --config auto app/juice-shop
 
-      - name: SCA
-        run: echo "Trivy filesystem"
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: app/juice-shop
+          format: table
+          severity: CRITICAL,HIGH
 
       - name: Secret Scan
         run: echo "Gitleaks"
