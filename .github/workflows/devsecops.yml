@@ -1,0 +1,32 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          python -m pip install semgrep
+          semgrep scan --config auto app/juice-shop
+
+      - name: SCA
+        run: echo "Trivy filesystem"
+
+      - name: Secret Scan
+        run: echo "Gitleaks"
+
+      - name: Build Docker Image
+        run: echo "Docker build"
+
+      - name: Container Scan
+        run: echo "Trivy image"
