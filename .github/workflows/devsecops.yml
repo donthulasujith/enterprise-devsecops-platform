@@ -28,10 +28,7 @@ jobs:
           severity: CRITICAL,HIGH
 
       - name: Run Docker Scout scan
-        run: |
-          docker scout cves juice-shop:dev \
-            --only-package-type npm \
-            --only-severity critical,high
+        run: docker scout cves juice-shop:dev
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
