@@ -27,6 +27,12 @@ jobs:
           format: table
           severity: CRITICAL,HIGH
 
+      - name: Run Docker Scout scan
+        run: |
+          docker scout cves juice-shop:dev \
+            --only-package-type npm \
+            --only-severity critical,high
+
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         continue-on-error: true
