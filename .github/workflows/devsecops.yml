@@ -23,6 +23,12 @@ jobs:
           python -m pip install semgrep
           semgrep scan --config auto app/juice-shop
 
+      - name: Verify Trivy ignore file
+        run: |
+          pwd
+          ls -la
+          test -f .trivyignore && echo ".trivyignore FOUND" || echo ".trivyignore NOT FOUND"
+
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
         with:
