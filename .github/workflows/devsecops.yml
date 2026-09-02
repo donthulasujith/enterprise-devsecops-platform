@@ -23,12 +23,6 @@ jobs:
           python -m pip install semgrep
           semgrep scan --config auto app/juice-shop
 
-      - name: Verify Trivy ignore file
-        run: |
-          pwd
-          ls -la
-          test -f .trivyignore && echo ".trivyignore FOUND" || echo ".trivyignore NOT FOUND"
-
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
         with:
@@ -46,7 +40,7 @@ jobs:
           format: table
           severity: CRITICAL
           ignore-unfixed: true
-          trivyignores: .trivyignore
+          trivyignores: app/juice-shop/.trivyignore
           exit-code: '1'
 
       - name: Run Gitleaks
