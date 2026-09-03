@@ -8,7 +8,9 @@ WORKDIR /app
 # Copy application source
 COPY . .
 
+# Use npm version compatible with the Juice Shop 20.1.1 dependency tree
 # Install all dependencies and build the application
+RUN npm install -g npm@11.6.0
 RUN npm install
 
 
