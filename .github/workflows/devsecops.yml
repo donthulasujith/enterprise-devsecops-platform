@@ -100,6 +100,11 @@ jobs:
           docker logs juice-shop-dast
           exit 1
 
+      - name: Prepare ZAP report directory
+        run: |
+          mkdir -p zap-reports
+          chmod 777 zap-reports
+
       - name: Run OWASP ZAP Full Scan
         continue-on-error: true
         run: |
