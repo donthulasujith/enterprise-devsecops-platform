@@ -67,7 +67,7 @@ jobs:
           sarif_file: trivy-image-results.sarif
 
       # =========================
-      # DAST - OWASP ZAP
+      # DAST - ZAP
       # =========================
 
       - name: Create DAST network
@@ -105,56 +105,59 @@ jobs:
           mkdir -p zap-reports
           chmod 777 zap-reports
 
-     - name: Run ZAP Full Scan
-       continue-on-error: true
-       run: |
-         MSYS_NO_PATHCONV=1 docker run --rm \
-           --network zap-net \
-           -v "$PWD/zap-reports:/zap/wrk:rw" \
-           -t ghcr.io/zaproxy/zaproxy:stable \
-           zap-full-scan.py \
-           -t http://juice-shop-dast:3000 \
-           -r zap-full-report.html \
-           -x zap-full-report.xml
-     - name: Enforce DAST security gate
-       run: |
-         python - <<'PY'
-         import xml.etree.ElementTree as ET
-         import sys
+      - name: Run ZAP Full Scan
+        continue-on-error: true
+        run: |
+          MSYS_NO_PATHCONV=1 docker run --rm \
+            --network zap-net \
+            -v "$PWD/zap-reports:/zap/wrk:rw" \
+            -t ghcr.io/zaproxy/zaproxy:stable \
+            zap-full-scan.py \
+            -t http://juice-shop-dast:3000 \
+            -r zap-full-report.html \
+            -x zap-full-report.xml
 
-         report = "zap-reports/zap-full-report.xml"
+      - name: Enforce DAST security gate
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          import sys
 
-         root = ET.parse(report).getroot()
+          report = "zap-reports/zap-full-report.xml"
 
-         high_findings = []
+          root = ET.parse(report).getroot()
 
-         for alert in root.findall(".//alertitem"):
-             riskcode = alert.findtext("riskcode", "0")
-             name = alert.findtext("name", "Unknown finding")
-             count = alert.findtext("count", "0")
+          high_findings = []
 
-             if riskcode == "3":
-                 high_findings.append((name, count))
+          for alert in root.findall(".//alertitem"):
+              riskcode = alert.findtext("riskcode", "0")
+              name = alert.findtext("name", "Unknown finding")
+              count = alert.findtext("count", "0")
 
-         if high_findings:
-             print("DAST SECURITY GATE: FAILED")
-             print("High-severity ZAP findings detected:")
+              if riskcode == "3":
+                  high_findings.append((name, count))
 
-             for name, count in high_findings:
-                 print(f"- {name}: {count}")
+          if high_findings:
+              print("DAST SECURITY GATE: FAILED")
+              print("High-severity ZAP findings detected:")
 
-             sys.exit(1)
+              for name, count in high_findings:
+                  print(f"- {name}: {count}")
 
-         print("DAST SECURITY GATE: PASSED")
-         print("No High-severity ZAP findings detected.")
-         PY
+              sys.exit(1)
+
+          print("DAST SECURITY GATE: PASSED")
+          print("No High-severity ZAP findings detected.")
+          PY
 
       - name: Upload ZAP report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: zap-dast-report
-          path: zap-reports/zap-full-report.html
+          path: |
+            zap-reports/zap-full-report.html
+            zap-reports/zap-full-report.xml
           if-no-files-found: warn
 
       - name: Cleanup DAST containers
