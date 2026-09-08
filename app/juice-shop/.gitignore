@@ -28,3 +28,22 @@ Thumbs.db
 # Temporary Files
 *.tmp
 *.temp
+
+# Security scan reports
+gitleaks-report.json
+gitleaks-findings.txt
+semgrep-results.json
+trivy-fs-report.json
+trivy-image-report.json
+trivy-image-slim.json
+trivy-image-slim-full.json
+juice_shop_trivy_image_security_report.pdf
+
+# ZAP reports
+zap-reports/
+
+# Temporary Docker files
+*.bak
+
+# Local analysis artifacts
+runtime-dependencies.txt

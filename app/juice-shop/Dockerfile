@@ -36,6 +36,7 @@ COPY --from=build /app/frontend/dist ./frontend/dist
 # Copy runtime application files
 COPY --from=build /app/config ./config
 COPY --from=build /app/encryptionkeys ./encryptionkeys
+COPY --from=build /app/ctf.key ./ctf.key
 COPY --from=build /app/swagger.yml ./swagger.yml
 COPY --from=build /app/data ./data
 COPY --from=build /app/ftp ./ftp

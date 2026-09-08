@@ -1,0 +1,11 @@
+# Repository-level generated security scan reports
+gitleaks-findings.txt
+juice_shop_trivy_image_security_report.pdf
+semgrep-results.json
+trivy-fs-report.json
+trivy-image-report.json
+trivy-image-slim.json
+trivy-image-slim-full.json
+
+# ZAP reports
+zap-reports/
