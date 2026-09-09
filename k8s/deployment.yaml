@@ -3,48 +3,180 @@ kind: Deployment
 metadata:
   name: juice-shop
   namespace: juice-shop
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: juice-shop
+
   template:
     metadata:
       labels:
         app: juice-shop
+
     spec:
+      # Prevent the application from receiving the Kubernetes API token.
       automountServiceAccountToken: false
+
+      # Pod-level security settings.
       securityContext:
+        # Allow the non-root application user to access the writable volumes.
+        fsGroup: 0
+        fsGroupChangePolicy: OnRootMismatch
+
+        # Use the container runtime's default seccomp restrictions.
         seccompProfile:
           type: RuntimeDefault
-      containers:
-        - name: juice-shop
+
+      # -------------------------------------------------
+      # INIT CONTAINER
+      # -------------------------------------------------
+      # The main container has a read-only root filesystem.
+      # This init container copies the required application
+      # files into writable emptyDir volumes before startup.
+      # -------------------------------------------------
+      initContainers:
+        - name: initialize-juice-shop
           image: juice-shop:multistage
-          ports:
-            - containerPort: 3000
+
           securityContext:
+            # Match the non-root user from the Docker image.
+            runAsUser: 65532
+            runAsGroup: 0
             runAsNonRoot: true
+
+            # Prevent privilege escalation.
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+
+            # The init container does not need Linux capabilities.
             capabilities:
               drop:
                 - ALL
+
+          command:
+            - sh
+            - -c
+            - |
+              cp -R /app/data/. /writable-data/
+              cp -R /app/ftp/. /writable-ftp/
+              cp -R /app/frontend/dist/. /writable-frontend-dist/
+              cp -R /app/.well-known/. /writable-well-known/
+              cp -R /app/i18n/. /writable-i18n/
+
+          volumeMounts:
+            - name: juice-data
+              mountPath: /writable-data
+
+            - name: juice-ftp
+              mountPath: /writable-ftp
+
+            - name: juice-frontend-dist
+              mountPath: /writable-frontend-dist
+
+            - name: juice-well-known
+              mountPath: /writable-well-known
+
+            - name: juice-i18n
+              mountPath: /writable-i18n
+
+      # -------------------------------------------------
+      # MAIN CONTAINER
+      # -------------------------------------------------
+      containers:
+        - name: juice-shop
+          image: juice-shop:multistage
+
+          ports:
+            - containerPort: 3000
+
+          securityContext:
+            # Run Juice Shop as a non-root user.
+            runAsUser: 65532
+            runAsGroup: 0
+            runAsNonRoot: true
+
+            # Prevent the process from gaining additional privileges.
+            allowPrivilegeEscalation: false
+
+            # Make the container filesystem read-only.
+            readOnlyRootFilesystem: true
+
+            # Remove all Linux capabilities.
+            capabilities:
+              drop:
+                - ALL
+
+          # Only directories that Juice Shop needs to modify
+          # are mounted as writable volumes.
+          volumeMounts:
+            - name: juice-data
+              mountPath: /app/data
+
+            - name: juice-ftp
+              mountPath: /app/ftp
+
+            - name: juice-frontend-dist
+              mountPath: /app/frontend/dist
+
+            - name: juice-well-known
+              mountPath: /app/.well-known
+
+            - name: juice-i18n
+              mountPath: /app/i18n
+
+            - name: juice-logs
+              mountPath: /app/logs
+
+          # Limit the resources available to the application.
           resources:
             requests:
               cpu: "250m"
               memory: "256Mi"
+
             limits:
               cpu: "500m"
               memory: "512Mi"
+
+          # Only send traffic to a Pod that is ready.
           readinessProbe:
             httpGet:
               path: /
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
+
+          # Restart the container if the application stops responding.
           livenessProbe:
             httpGet:
               path: /
               port: 3000
             initialDelaySeconds: 30
             periodSeconds: 20
+
+      # -------------------------------------------------
+      # WRITABLE VOLUMES
+      # -------------------------------------------------
+      # emptyDir volumes are temporary storage tied to the
+      # lifetime of this Pod. They disappear when the Pod is
+      # removed.
+      # -------------------------------------------------
+      volumes:
+        - name: juice-data
+          emptyDir: {}
+
+        - name: juice-ftp
+          emptyDir: {}
+
+        - name: juice-frontend-dist
+          emptyDir: {}
+
+        - name: juice-well-known
+          emptyDir: {}
+
+        - name: juice-i18n
+          emptyDir: {}
+
+        - name: juice-logs
+          emptyDir: {}
