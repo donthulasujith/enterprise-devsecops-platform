@@ -1,124 +1,231 @@
-# Application Assessment
+# 02 — Application Security Assessment
 
-## Project Name
+## OWASP Juice Shop 20.1.1
 
-Enterprise DevSecOps Platform
+### 1. Assessment Purpose
 
----
+OWASP Juice Shop is used as the intentionally vulnerable application workload for the Enterprise DevSecOps Platform.
 
-## Application
+The application provides a realistic target for demonstrating how security controls operate across source code, dependencies, containers, Kubernetes, and the deployed HTTP interface.
 
-OWASP Juice Shop
+The assessment deliberately separates two concepts:
 
----
+- **Application vulnerabilities:** weaknesses intentionally present in Juice Shop.
+- **Platform security controls:** controls implemented by this project to identify, contain, and manage risk.
 
-## Purpose
-
-The application will be used as a production-inspired workload to demonstrate an end-to-end DevSecOps implementation using open-source technologies.
-
----
-
-## Why this Application?
-
-OWASP Juice Shop is one of the most widely recognized intentionally vulnerable web applications maintained by OWASP. It provides realistic functionality while allowing security engineers to demonstrate secure software delivery practices including Static Application Security Testing (SAST), Software Composition Analysis (SCA), Secret Scanning, Container Security, Kubernetes Security, Dynamic Application Security Testing (DAST), and Runtime Security.
+The project does not attempt to remove Juice Shop's intentional vulnerabilities because doing so would defeat its purpose as a security testing workload.
 
 ---
 
-## Technology Stack
+## 2. Why Juice Shop?
 
-- Node.js
-- TypeScript
-- Express.js
-- npm
-- SQLite (local database)
-- REST APIs
-- OpenAPI (Swagger)
+Juice Shop is suitable because it is intentionally insecure and exercises a broad range of common web-application security concepts.
 
----
+It provides a useful target for:
 
-## Dependencies
+- SAST analysis
+- Dependency analysis
+- Secret scanning
+- Container scanning
+- DAST
+- Security-gate demonstrations
+- Kubernetes runtime hardening
+- Threat modeling
 
-The application uses **npm** as the package manager.
-
-Dependencies are defined in:
-
-- `package.json`
-- `package-lock.json`
-
-The `package-lock.json` file locks dependency versions to ensure reproducible builds and accurate Software Composition Analysis (SCA).
+This allows the DevSecOps platform to be tested against an application that contains meaningful security risk rather than a trivial clean application.
 
 ---
 
-## Build Process
+## 3. Assessment Boundaries
 
-The application is started using npm scripts defined in `package.json`.
+### Included
 
-The project will be executed locally first and then containerized as part of this DevSecOps project.
+- Application source tree under `app/juice-shop`.
+- Node.js dependencies and package metadata.
+- Docker build process.
+- Final container image.
+- Kubernetes manifests under `k8s/`.
+- Running HTTP application exposed through the Kubernetes Service.
+- Dynamic testing using OWASP ZAP.
 
----
+### Excluded
 
-## External Services
-
-No external services are required for local execution.
-
----
-
-## Authentication
-
-The application implements user authentication using JWT (JSON Web Tokens).
-
----
-
-## Security-Relevant Files
-
-| File | Purpose |
-|------|---------|
-| `package.json` | Project metadata, dependencies, and npm scripts |
-| `package-lock.json` | Locks dependency versions for reproducible builds |
-| `server.ts` | Application entry point |
-| `config/` | Application configuration |
-| `swagger.yml` | OpenAPI specification for the application's REST APIs |
-| `README.md` | Official setup and execution instructions |
+- Removing intentional Juice Shop vulnerabilities.
+- Treating intentionally vulnerable challenge content as an accidental defect in the project.
+- Claiming complete production readiness for the application itself.
+- Building an enterprise monitoring stack that is not present in the repository.
 
 ---
 
-## Observations
+## 4. Application Security Lifecycle
 
-- The application source does not include a Dockerfile.
-- A secure multi-stage Dockerfile will be created as part of this project.
-- The project uses TypeScript and npm.
-- API documentation is available through the `swagger.yml` specification.
-- Dependency versions are locked using `package-lock.json`, which improves build consistency and security scanning.
+```text
+Juice Shop Source
+      ↓
+Threat Model
+      ↓
+SAST / Secret / Dependency Scanning
+      ↓
+Multi-stage Docker Build
+      ↓
+Container Image Scan
+      ↓
+Kubernetes IaC Scan
+      ↓
+Hardened Kubernetes Deployment
+      ↓
+OWASP ZAP DAST
+      ↓
+Security Gate
+      ↓
+Runtime Security Validation
+```
 
 ---
 
-## Potential Risks
+## 5. Source and Dependency Assessment
 
-- Intentionally vulnerable application containing OWASP Top 10 vulnerabilities.
-- Vulnerable third-party dependencies.
-- Risk of hardcoded secrets being introduced during development.
-- Container image vulnerabilities after containerization.
-- Kubernetes misconfigurations after deployment.
-- Runtime attacks against the running application.
+### SAST — Semgrep
+
+Semgrep is used to inspect application source code for security-relevant coding patterns.
+
+**Purpose:** identify source-level weaknesses before the application reaches deployment.
+
+**Value:** provides developer-facing feedback earlier in the lifecycle than a runtime scanner.
+
+### Secret Scanning — Gitleaks
+
+Gitleaks searches the repository for credential-like material and secrets.
+
+Juice Shop intentionally contains test keys and challenge material. Consequently, Gitleaks is retained as a visible control while its behavior is treated carefully rather than pretending that every detected value is a production credential.
+
+The current workflow allows the Gitleaks step to remain non-blocking because the intentionally vulnerable application contains test material.
+
+### Dependency / Filesystem Scanning — Trivy
+
+Trivy is used to inspect the filesystem and dependency content for known vulnerabilities.
+
+The project uses `.trivyignore` where findings are intentionally triaged and accepted as part of the assessment workload. This is risk management, not deletion of evidence.
 
 ---
 
-## Planned Security Controls
+## 6. Container Assessment
 
-Throughout this project, the following security controls will be implemented:
+The application is packaged using a multi-stage Dockerfile.
 
-- Threat Modeling (OWASP Threat Dragon)
-- GitHub Branch Protection
-- GitHub Actions CI/CD
-- Secret Scanning (Gitleaks)
-- Static Application Security Testing (Semgrep)
-- Software Composition Analysis (Trivy)
-- SBOM Generation (Syft)
-- Container Image Scanning (Trivy)
-- Image Signing (Cosign)
-- Infrastructure as Code Scanning (Checkov)
-- Kubernetes Policy Enforcement (Kyverno)
-- Dynamic Application Security Testing (OWASP ZAP)
-- Runtime Security Monitoring (Falco)
-- Monitoring (Prometheus & Grafana)
-- Centralized Logging (Loki)
+### Build stage
+
+The build stage contains the complete dependency tree and tools required to construct the application.
+
+### Runtime stage
+
+The runtime stage receives only the files required to run the compiled application and production dependencies.
+
+The project also pins npm to `11.6.0` during the build because the Juice Shop dependency tree required a compatible npm version in the Node 22 build environment.
+
+### Runtime hardening
+
+The final image runs as UID `65532` rather than root.
+
+This is important because Kubernetes `runAsNonRoot` enforcement is supported by the actual image identity instead of relying solely on a Kubernetes configuration declaration.
+
+---
+
+## 7. Kubernetes Assessment
+
+The application is deployed with security controls including:
+
+- `runAsNonRoot: true`
+- UID `65532`
+- disabled privilege escalation
+- dropped capabilities
+- read-only root filesystem
+- RuntimeDefault seccomp
+- disabled automatic ServiceAccount token mounting
+- CPU and memory limits
+- readiness/liveness probes
+- ingress NetworkPolicy
+
+Because Juice Shop writes to several application paths during startup, explicit writable `emptyDir` volumes are used. An init container copies required application content into these writable locations while preserving the main container's read-only root filesystem.
+
+This is a practical example of balancing **application compatibility** with **container hardening**.
+
+---
+
+## 8. Dynamic Application Assessment
+
+OWASP ZAP 2.17.0 performs the DAST assessment against the running containerized application.
+
+The active scan reached 197 URLs and generated 219 alerts. The project does not interpret the raw ZAP exit code as a simple pass/fail because ZAP can return a non-zero status for warnings. Instead, the generated XML report is parsed and the project-defined gate fails only when a High-severity finding is present.
+
+### DAST result summary
+
+| Risk | Result |
+|---|---:|
+| High | 0 |
+| Medium | 5 |
+| Low | 5 |
+| Informational | 0 |
+| URLs crawled | 197 |
+| Total alerts | 219 |
+
+The detailed findings and evidence are documented in `docs/05-dast-findings.md`.
+
+---
+
+## 9. Assessment Interpretation
+
+A key outcome of this assessment is that the platform can report application risk without attempting to disguise the intentionally vulnerable nature of Juice Shop.
+
+The correct security-engineering response is:
+
+```text
+Finding
+  ↓
+Validate
+  ↓
+Classify severity
+  ↓
+Determine whether expected / intentional
+  ↓
+Document
+  ↓
+Apply compensating controls where appropriate
+  ↓
+Gate unacceptable risk
+```
+
+This is preferable to simply modifying the vulnerable application until scanners become quiet.
+
+---
+
+## 10. Residual Risk
+
+The application remains intentionally vulnerable by design. Therefore, a clean pipeline does **not** mean the application is secure in isolation.
+
+The project demonstrates that:
+
+- vulnerabilities can be detected,
+- findings can be categorized,
+- security controls can be enforced around the workload,
+- high-risk dynamic findings can block delivery, and
+- runtime containment can reduce the impact of a compromise.
+
+That distinction is central to the project's security model.
+
+---
+
+## 11. Future Enhancements
+
+Potential future controls include:
+
+- SBOM generation with Syft
+- Image signing and verification with Cosign
+- Kubernetes admission policy with Kyverno
+- Dedicated runtime detection with Falco
+- Metrics and dashboards using Prometheus/Grafana
+- Centralized logging using Loki
+- Stronger image provenance and digest pinning
+- Automated dependency update workflows
+
+These are intentionally documented as future work rather than represented as completed controls.
